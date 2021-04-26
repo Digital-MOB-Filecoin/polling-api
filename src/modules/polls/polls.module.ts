@@ -18,10 +18,13 @@ import { PollsServiceEvents } from './polls.service.events';
 import { RabbitMQModule } from '../rabbitmq/rabbitmq.module';
 import { PollsServiceSubscribers } from './polls.service.subscribers';
 import { StoreVoteConsumer } from './storeVote.consumer'
+import { MultisigVoteConsumer } from './multisigVote.consumer';
+import { MultisigInfo } from '../snapshot/multisigInfo.entity';
+import { MultisigRelatedAddress } from '../snapshot/multisigRelatedAddress.entity';
 
 @Module({
-    imports: [HttpModule, ConfigurationModule, RabbitMQModule, LotusModule, SnapshotModule, TypeOrmModule.forFeature([Poll, Option, ConstituentGroup, Vote, Voter, VoteResult])],
-    providers: [PollsService, PollsServiceCrons, PollsServiceEvents, PollsServiceSubscribers, StoreVoteConsumer],
+    imports: [HttpModule, ConfigurationModule, RabbitMQModule, LotusModule, SnapshotModule, TypeOrmModule.forFeature([Poll, Option, ConstituentGroup, Vote, Voter, VoteResult, MultisigInfo, MultisigRelatedAddress])],
+    providers: [PollsService, PollsServiceCrons, PollsServiceEvents, PollsServiceSubscribers, StoreVoteConsumer, MultisigVoteConsumer],
     exports: [PollsService],
     controllers: [PollsController],
 })

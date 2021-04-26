@@ -1,6 +1,6 @@
 import { HttpException, HttpService, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getRepository, MoreThanOrEqual, Repository } from 'typeorm';
+import { getRepository, In, MoreThanOrEqual, Repository } from 'typeorm';
 import { ConstituentGroup, GroupType, VoteType } from '../voters/constituentGroup.entity';
 import { Vote } from '../voters/vote.entity';
 import { Option } from './option.entity';
@@ -18,6 +18,8 @@ import * as BN from 'bn.js'
 import { Buckets, Client, createUserAuth, KeyInfo, PrivateKey, UserAuth } from '@textile/hub';
 import { Actor } from 'filecoin.js/builds/dist/providers/Types';
 import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
+import { MultisigInfo } from '../snapshot/multisigInfo.entity';
+import { MultisigRelatedAddress } from '../snapshot/multisigRelatedAddress.entity';
 
 @Injectable()
 export class PollsService {
@@ -34,6 +36,10 @@ export class PollsService {
         private voterRepository: Repository<Voter>,
         @InjectRepository(VoteResult)
         private voteResultRepository: Repository<VoteResult>,
+        @InjectRepository(MultisigInfo)
+        private multisigInfoRepository: Repository<MultisigInfo>,
+        @InjectRepository(MultisigRelatedAddress)
+        private multisigRelatedAddressRepository: Repository<MultisigRelatedAddress>,
         protected snapshotService: SnapshotService,
         protected readonly config: AppConfig,
         protected lotus: LotusService,
@@ -336,6 +342,13 @@ export class PollsService {
             fileContent: vote.signature
         }));
 
+        await this.rabbitMQService.publish('poll', 'multisigVote', JSON.stringify({
+            address: params.address,
+            extraAddresses: params.extraAddresses,
+            voteId: vote.id,
+            pollId: poll.id,
+        }));
+
         const voteConstituentGroup = poll.constituentGroups.find(constituentGroup => {
             if (constituentGroup.id === vote.constituentGroupId) return true;
             return false;
@@ -517,16 +530,16 @@ export class PollsService {
     async updateSignaturesToV1() {
         const pollInfo = {};
         const votes = await this.voteRepository.find();
-        for (let i=0; i<votes.length; i++){
+        for (let i = 0; i < votes.length; i++) {
             const vote = votes[i];
 
-            if (!pollInfo[vote.pollId]){
-                const poll = await this.pollsRepository.findOne({where: {id: vote.pollId}});
+            if (!pollInfo[vote.pollId]) {
+                const poll = await this.pollsRepository.findOne({ where: { id: vote.pollId } });
                 pollInfo[vote.pollId] = poll;
             }
 
             const signature = JSON.parse(vote.signature);
-            signature.version=1;
+            signature.version = 1;
             signature.address = vote.address;
             signature.signer = vote.signerAddress;
             vote.signature = JSON.stringify(signature);

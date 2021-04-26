@@ -10,9 +10,11 @@ import { Vote } from '../voters/vote.entity';
 import { VoteResult } from '../polls/voteResult.entity';
 import { MinerInfo } from '../snapshot/minerInfo.entity';
 import { MinerRelatedAddress } from '../snapshot/minerRelatedAddress.entity';
+import { MultisigRelatedAddress } from '../snapshot/multisigRelatedAddress.entity';
+import { MultisigInfo } from '../snapshot/multisigInfo.entity';
 
 // TODO: Add db entities here
-const entities = [User, Poll, Option, ConstituentGroup, Voter, Vote, VoteResult, MinerInfo, MinerRelatedAddress];
+const entities = [User, Poll, Option, ConstituentGroup, Voter, Vote, VoteResult, MinerInfo, MinerRelatedAddress, MultisigRelatedAddress, MultisigInfo];
 
 @Injectable()
 export class TypeOrmDefaultConfigService implements TypeOrmOptionsFactory {

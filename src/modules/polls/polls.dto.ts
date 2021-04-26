@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsArray, IsString } from 'class-validator';
 
 export class VoteParamsDto {
     @IsString()
@@ -9,4 +9,7 @@ export class VoteParamsDto {
 
     @IsString()
     signature: string;
+
+    @IsArray()
+    extraAddresses: [];
 }

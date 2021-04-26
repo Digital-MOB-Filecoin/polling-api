@@ -31,6 +31,7 @@ export class RabbitMQService {
     await this.declareExchanges('poll', 'direct')
     await this.declareQueue(this.channel1, 'poll', 'getSnapshotInfo', 'getSnapshotInfo');
     await this.declareQueue(this.channel2, 'poll', 'storeVote', 'storeVote');
+    await this.declareQueue(this.channel2, 'poll', 'multisigVote', 'multisigVote');
   }
 
   public async declareExchanges(exchangeName: string, type: 'direct' | 'topic' | 'headers' | 'fanout' | 'match') {
@@ -58,6 +59,7 @@ export class RabbitMQService {
     let channel:amqplib.Channel;
     if (consumer.queue === 'getSnapshotInfo') channel = this.channel1;
     if (consumer.queue === 'storeVote') channel = this.channel2;
+    if (consumer.queue === 'multisigVote') channel = this.channel2;
 
     await channel.assertQueue(consumer.queue);
     await channel.consume(consumer.queue, msg => {
