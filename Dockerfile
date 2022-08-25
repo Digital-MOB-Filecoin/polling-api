@@ -1,4 +1,4 @@
-FROM node:13.14-stretch AS development
+FROM node:14.0.0-stretch AS development
 
 WORKDIR /usr/src/app
 COPY package*.json ./
@@ -9,7 +9,7 @@ RUN yarn install
 COPY . .
 RUN npm run build
 
-FROM node:13.14-stretch AS production
+FROM node:14.0.0-stretch AS production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
