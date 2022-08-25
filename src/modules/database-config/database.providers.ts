@@ -14,7 +14,19 @@ import { MultisigRelatedAddress } from '../snapshot/multisigRelatedAddress.entit
 import { MultisigInfo } from '../snapshot/multisigInfo.entity';
 
 // TODO: Add db entities here
-const entities = [User, Poll, Option, ConstituentGroup, Voter, Vote, VoteResult, MinerInfo, MinerRelatedAddress, MultisigRelatedAddress, MultisigInfo];
+const entities = [
+  User,
+  Poll,
+  Option,
+  ConstituentGroup,
+  Voter,
+  Vote,
+  VoteResult,
+  MinerInfo,
+  MinerRelatedAddress,
+  MultisigRelatedAddress,
+  MultisigInfo,
+];
 
 @Injectable()
 export class TypeOrmDefaultConfigService implements TypeOrmOptionsFactory {
@@ -25,7 +37,7 @@ export class TypeOrmDefaultConfigService implements TypeOrmOptionsFactory {
       type: 'postgres',
       synchronize: true,
       autoLoadEntities: false,
-      logging: 'all',
+      logging: ['error'],
       entities,
       ...this.config.values.database,
     };
