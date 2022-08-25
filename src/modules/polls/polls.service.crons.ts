@@ -192,7 +192,7 @@ export class PollsServiceCrons {
     //change status from pending to bulding_snapshot
     let polls = await getRepository(Poll)
       .createQueryBuilder()
-      .where("status = :status and start <= NOW() + interval '1 hours'", {
+      .where("status = :status and start <= NOW() + interval '24 hours'", {
         status: Status.PENDING,
       })
       .getMany();
