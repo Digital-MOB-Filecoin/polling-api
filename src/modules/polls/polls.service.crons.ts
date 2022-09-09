@@ -33,7 +33,7 @@ export class PollsServiceCrons {
     private eventEmitter: EventEmitter2,
   ) {}
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  // @Cron(CronExpression.EVERY_10_MINUTES)
   async getPollsFromIssues() {
     const { approveLabel } = this.config.values.issueParser;
 
@@ -185,7 +185,7 @@ export class PollsServiceCrons {
     );
   }
 
-  @Cron('1 * * * * *')
+  // @Cron('1 * * * * *')
   async updatePollStatus() {
     console.log('update poll status cron');
 
