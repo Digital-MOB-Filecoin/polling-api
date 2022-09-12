@@ -219,7 +219,7 @@ export class PollsServiceCrons {
       const lastProcessedMiner = await getRepository(MinerInfo)
         .createQueryBuilder()
         .where(
-          "MinerInfo.createdAt >= NOW() - (10 * interval '1 minute') and MinerInfo.pollId=:pollId and MinerInfo.height=:height",
+          "MinerInfo.createdAt >= NOW() - (60 * interval '1 minute') and MinerInfo.pollId=:pollId and MinerInfo.height=:height",
           {
             pollId: poll.id,
             height: poll.snapshotHeight,
