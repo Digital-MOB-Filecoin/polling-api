@@ -34,35 +34,33 @@ export class GetSnapshotInfoConsumer implements IConsumer {
         message.tipset,
       );
       const power = minerPower.MinerPower.RawBytePower;
-      const powerBN = new BN(power);
 
-      if (!powerBN.isZero()) {
-        const minerInfo = await this.lotus.walletProvider.minerInfo(
-          miner,
-          message.tipset,
-        );
-        const minerState = await this.lotus.walletProvider.readState(
-          miner,
-          message.tipset,
-        );
+      const minerInfo = await this.lotus.walletProvider.minerInfo(
+        miner,
+        message.tipset,
+      );
+      const minerState = await this.lotus.walletProvider.readState(
+        miner,
+        message.tipset,
+      );
 
-        const minerBalance = minerState.Balance;
-        const minerLockedFunds = minerState.State.LockedFunds;
+      const minerBalance = minerState.Balance;
+      const minerLockedFunds = minerState.State.LockedFunds;
 
-        const relatedAddresses = [minerInfo.Owner];
-        if (minerInfo.Owner !== minerInfo.Worker)
-          relatedAddresses.push(minerInfo.Worker);
+      const relatedAddresses = [minerInfo.Owner];
+      if (minerInfo.Owner !== minerInfo.Worker)
+        relatedAddresses.push(minerInfo.Worker);
 
-        await this.snapshotService.storeMinerInfo(
-          relatedAddresses,
-          miner,
-          power,
-          minerBalance,
-          minerLockedFunds,
-          message.snapshotHeight,
-          message.pollId,
-        );
-      }
+      await this.snapshotService.storeMinerInfo(
+        relatedAddresses,
+        miner,
+        power,
+        minerBalance,
+        minerLockedFunds,
+        message.snapshotHeight,
+        message.pollId,
+      );
+
       channel.ack(brokerMsg);
     } catch (e) {
       console.log(e);
