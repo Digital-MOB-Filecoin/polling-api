@@ -1,15 +1,16 @@
-import { IsArray, IsString } from 'class-validator';
+import { IsArray, IsOptional, IsString } from 'class-validator';
 
 export class VoteParamsDto {
-    @IsString()
-    address: string;
+  @IsString()
+  address: string;
 
-    @IsString()
-    option: string;
+  @IsString()
+  option: string;
 
-    @IsString()
-    signature: string;
+  @IsString()
+  signature: string;
 
-    @IsArray()
-    extraAddresses: [];
+  @IsArray()
+  @IsOptional()
+  extraAddresses: [];
 }

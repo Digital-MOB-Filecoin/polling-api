@@ -449,16 +449,18 @@ export class PollsService {
       }),
     );
 
-    await this.rabbitMQService.publish(
-      'poll',
-      'multisigVote',
-      JSON.stringify({
-        address: params.address,
-        extraAddresses: params.extraAddresses,
-        voteId: vote.id,
-        pollId: poll.id,
-      }),
-    );
+    if (params.extraAddresses && params.extraAddresses.length > 0) {
+      await this.rabbitMQService.publish(
+        'poll',
+        'multisigVote',
+        JSON.stringify({
+          address: params.address,
+          extraAddresses: params.extraAddresses,
+          voteId: vote.id,
+          pollId: poll.id,
+        }),
+      );
+    }
 
     const voteConstituentGroup = poll.constituentGroups.find(
       (constituentGroup) => {
