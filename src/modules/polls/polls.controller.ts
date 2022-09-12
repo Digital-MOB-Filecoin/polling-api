@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { VoteParamsDto } from './polls.dto';
@@ -7,7 +16,10 @@ import { PollsServiceCrons } from './polls.service.crons';
 
 @Controller()
 export class PollsController {
-  constructor(private pollsService: PollsService, private pollsServiceCrons: PollsServiceCrons) { }
+  constructor(
+    private pollsService: PollsService,
+    private pollsServiceCrons: PollsServiceCrons,
+  ) {}
 
   @Get('api/pollsFromIssues')
   async getPollsFromIssues() {
@@ -18,6 +30,12 @@ export class PollsController {
   @Get('api/textileTest')
   async textileTest() {
     this.pollsService.testTextile();
+    return {};
+  }
+
+  @Get('api/snapshotTest')
+  async snapshotTest() {
+    this.pollsService.testSnapshot();
     return {};
   }
 
@@ -60,8 +78,14 @@ export class PollsController {
   }
 
   @Get('api/polls/:id/:constituentGroupId/voteList')
-  async constituentGroupVotesList(@Param('id') id: number, @Param('constituentGroupId') constituentGroupId: number) {
-    const poll = await this.pollsService.getConstituentGroupVoteList(id, constituentGroupId);
+  async constituentGroupVotesList(
+    @Param('id') id: number,
+    @Param('constituentGroupId') constituentGroupId: number,
+  ) {
+    const poll = await this.pollsService.getConstituentGroupVoteList(
+      id,
+      constituentGroupId,
+    );
     return poll;
   }
 }
