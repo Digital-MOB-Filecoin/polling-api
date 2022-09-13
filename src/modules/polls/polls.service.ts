@@ -25,6 +25,8 @@ import { SnapshotService } from '../snapshot/snapshot.service';
 import { MinerInfo } from '../snapshot/minerInfo.entity';
 import { parseIssue } from './polls.utils';
 import * as BN from 'bn.js';
+import { BigNumber } from 'bignumber.js';
+
 import {
   Buckets,
   Client,
@@ -33,10 +35,11 @@ import {
   PrivateKey,
   UserAuth,
 } from '@textile/hub';
-import { Actor } from 'filecoin.js/builds/dist/providers/Types';
+import { Actor, Message } from 'filecoin.js/builds/dist/providers/Types';
 import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
 import { MultisigInfo } from '../snapshot/multisigInfo.entity';
 import { MultisigRelatedAddress } from '../snapshot/multisigRelatedAddress.entity';
+import * as cbor from 'ipld-dag-cbor';
 
 @Injectable()
 export class PollsService {
@@ -282,7 +285,7 @@ export class PollsService {
     return await votes.getMany();
   }
 
-  async voteInPoll(id: number, params: VoteParamsDto) {
+  async voteInPoll(id: number, params: VoteParamsDto, signer = 'lotus') {
     const poll = await this.pollsRepository.findOne({
       where: { id: id },
       relations: ['options', 'constituentGroups'],
@@ -342,14 +345,38 @@ export class PollsService {
         Data: Buffer.from(sigBuffer.slice(1)).toString('base64'),
       };
 
-      const message = `${id} - ${params.option}`;
-      const check = await this.lotus.walletProvider.verify(
-        params.address,
-        Buffer.from(message),
-        sig,
-      );
-      if (!check) {
-        throw new Error('Signature invalid');
+      if (signer === 'lotus') {
+        const message = `${id} - ${params.option}`;
+        const check = await this.lotus.walletProvider.verify(
+          params.address,
+          Buffer.from(message),
+          sig,
+        );
+        if (!check) {
+          throw new Error('Signature invalid');
+        }
+      }
+
+      if (signer === 'glif') {
+        const messageParams = Buffer.from(
+          cbor.util.serialize([`${id} - ${params.option}`]),
+        ).toString('base64');
+        const newMessage = new Message();
+        newMessage.To = 'f01';
+        newMessage.From = params.address;
+        newMessage.Nonce = 0;
+        newMessage.Value = new BigNumber(0);
+        newMessage.Method = 1;
+        newMessage.Params = messageParams;
+
+        const check = await this.lotus.walletProvider.verify(
+          params.address,
+          Buffer.from(cbor.util.serialize([])),
+          sig,
+        );
+        if (!check) {
+          throw new Error('Signature invalid');
+        }
       }
     } catch (e) {
       throw new HttpException(

@@ -9,9 +9,6 @@ import { RabbitMQService } from 'src/modules/rabbitmq/rabbitmq.service';
 import { IConsumer } from 'src/modules/rabbitmq/rabbitmq.types';
 import { SnapshotService } from './snapshot.service';
 
-import * as cbor from 'ipld-dag-cbor';
-import * as BN from 'bn.js';
-
 @Injectable()
 export class GetSnapshotInfoConsumer implements IConsumer {
   public queue = 'getSnapshotInfo';

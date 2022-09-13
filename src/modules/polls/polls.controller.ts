@@ -59,7 +59,16 @@ export class PollsController {
 
   @Post('api/polls/:id/vote')
   async voteInPoll(@Param('id') id: number, @Body() voteParams: VoteParamsDto) {
-    const poll = await this.pollsService.voteInPoll(id, voteParams);
+    const poll = await this.pollsService.voteInPoll(id, voteParams, 'lotus');
+    return poll;
+  }
+
+  @Post('api/polls/:id/vote/glif')
+  async voteInPollWithGlif(
+    @Param('id') id: number,
+    @Body() voteParams: VoteParamsDto,
+  ) {
+    const poll = await this.pollsService.voteInPoll(id, voteParams, 'glif');
     return poll;
   }
 
