@@ -370,9 +370,9 @@ export class PollsService {
         const { Message: LotusMessage, Signature } = signedMessage;
         params.address = LotusMessage.To;
 
-        const check = await filecoin_signer.verifySignature(
+        const check = filecoin_signer.verifySignature(
           Signature.Data,
-          LotusMessage,
+          filecoin_signer.transactionSerializeRaw(LotusMessage),
         );
 
         if (!check) {
