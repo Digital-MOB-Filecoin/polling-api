@@ -25,7 +25,7 @@ import { SnapshotService } from '../snapshot/snapshot.service';
 import { MinerInfo } from '../snapshot/minerInfo.entity';
 import { parseIssue } from './polls.utils';
 import * as BN from 'bn.js';
-import { BigNumber } from 'bignumber.js';
+import * as filecoin_signer from '@zondax/filecoin-signing-tools';
 
 import {
   Buckets,
@@ -35,7 +35,11 @@ import {
   PrivateKey,
   UserAuth,
 } from '@textile/hub';
-import { Actor, Message } from 'filecoin.js/builds/dist/providers/Types';
+import {
+  Actor,
+  Message,
+  SignedMessage,
+} from 'filecoin.js/builds/dist/providers/Types';
 import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
 import { MultisigInfo } from '../snapshot/multisigInfo.entity';
 import { MultisigRelatedAddress } from '../snapshot/multisigRelatedAddress.entity';
@@ -285,7 +289,12 @@ export class PollsService {
     return await votes.getMany();
   }
 
-  async voteInPoll(id: number, params: VoteParamsDto, signer = 'lotus') {
+  async voteInPoll(
+    id: number,
+    params: VoteParamsDto,
+    signer = 'lotus',
+    signedMessage: SignedMessage = null,
+  ) {
     const poll = await this.pollsRepository.findOne({
       where: { id: id },
       relations: ['options', 'constituentGroups'],
@@ -310,8 +319,8 @@ export class PollsService {
       );
     }
 
-    const option = poll.options.find((el: Option) => params.option === el.name);
-    if (!option) {
+    let option = poll.options.find((el: Option) => params.option === el.name);
+    if (!option && signer === 'lotus') {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
@@ -358,31 +367,47 @@ export class PollsService {
       }
 
       if (signer === 'glif') {
-        const messageParams = Buffer.from(
-          cbor.util.serialize([`${id} - ${params.option}`]),
-        ).toString('base64');
-        const newMessage = new Message();
-        newMessage.To = 'f01';
-        newMessage.From = params.address;
-        newMessage.Nonce = 0;
-        newMessage.Value = new BigNumber(0);
-        newMessage.Method = 1;
-        newMessage.Params = messageParams;
+        const { Message: LotusMessage, Signature } = signedMessage;
+        params.address = LotusMessage.To;
 
-        const check = await this.lotus.walletProvider.verify(
-          params.address,
-          Buffer.from(cbor.util.serialize([])),
-          sig,
+        const check = await filecoin_signer.verifySignature(
+          Signature.Data,
+          LotusMessage,
         );
+
         if (!check) {
           throw new Error('Signature invalid');
         }
+
+        const decodedMessageParams = cbor.util
+          .deserialize(Buffer.from(LotusMessage.Params as string, 'base64'))
+          .toString();
+
+        const [pollID, vote] = decodedMessageParams.split(' - ') as [
+          string,
+          string,
+        ];
+
+        if (Number(pollID) !== id)
+          throw new Error('Signature invalid, wrong poll id');
+
+        option = poll.options.find((el: Option) => vote === el.name);
+        if (!option) {
+          throw new HttpException(
+            {
+              status: HttpStatus.BAD_REQUEST,
+              error: 'Signature invalid, Invalid option',
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
       }
     } catch (e) {
+      console.log(e);
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
-          error: e.message,
+          error: e.message || e,
         },
         HttpStatus.BAD_REQUEST,
       );

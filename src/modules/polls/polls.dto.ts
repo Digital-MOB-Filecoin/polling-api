@@ -1,4 +1,5 @@
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { SignedMessage } from 'filecoin.js/builds/dist/providers/Types';
 
 export class VoteParamsDto {
   @IsString()
@@ -13,4 +14,9 @@ export class VoteParamsDto {
   @IsArray()
   @IsOptional()
   extraAddresses: [];
+}
+
+export class GlifVoteParamsDto {
+  @ValidateNested()
+  message: SignedMessage;
 }
