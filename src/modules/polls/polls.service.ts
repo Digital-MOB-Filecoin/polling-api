@@ -295,6 +295,11 @@ export class PollsService {
     signer = 'lotus',
     signedMessage: SignedMessage = null,
   ) {
+    if (signer === 'glif') {
+      const { Message: LotusMessage } = signedMessage;
+      params.address = LotusMessage.To;
+    }
+
     const poll = await this.pollsRepository.findOne({
       where: { id: id },
       relations: ['options', 'constituentGroups'],
@@ -368,8 +373,6 @@ export class PollsService {
 
       if (signer === 'glif') {
         const { Message: LotusMessage, Signature } = signedMessage;
-        params.address = LotusMessage.To;
-
         const check = filecoin_signer.verifySignature(
           Signature.Data,
           filecoin_signer.transactionSerializeRaw(LotusMessage),
