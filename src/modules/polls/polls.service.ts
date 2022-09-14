@@ -388,7 +388,8 @@ export class PollsService {
           string,
         ];
 
-        if (Number(pollID) !== id)
+        console.log(pollID, id);
+        if (Number(pollID) !== +id)
           throw new Error('Signature invalid, wrong poll id');
 
         option = poll.options.find((el: Option) => vote === el.name);
