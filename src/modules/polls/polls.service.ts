@@ -147,6 +147,25 @@ export class PollsService {
     }
   }
 
+  async viewPollVotes(id: number) {
+    const poll = await this.pollsRepository.findOne({
+      where: { id: id },
+    });
+    if (!poll) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: 'Invalid id',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const votes = await this.voteRepository.find({ pollId: id });
+
+    return votes;
+  }
+
   async getPoll(id: number) {
     const poll = await this.pollsRepository.findOne({
       where: { id: id },

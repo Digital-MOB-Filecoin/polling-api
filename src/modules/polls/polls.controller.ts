@@ -75,6 +75,12 @@ export class PollsController {
     return poll;
   }
 
+  @Get('api/polls/:id/view-votes')
+  async viewPollVotes(@Param('id') id: string) {
+    const votes = await this.pollsService.viewPollVotes(+id);
+    return votes;
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('api/polls/:id/preview')
   async previewPoll(@Param('id') id: string) {
