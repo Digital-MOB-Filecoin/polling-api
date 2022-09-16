@@ -51,6 +51,8 @@ export class PollsService {
     private httpService: HttpService,
     @InjectRepository(Poll)
     private pollsRepository: Repository<Poll>,
+    @InjectRepository(Option)
+    private optionsRepository: Repository<Option>,
     @InjectRepository(ConstituentGroup)
     private constituentGroupRepository: Repository<ConstituentGroup>,
     @InjectRepository(Vote)
@@ -163,6 +165,37 @@ export class PollsService {
 
     const votes = await this.voteRepository.find({ pollId: id });
 
+    return votes;
+  }
+
+  async viewPollVotesSimple(id: number) {
+    const poll = await this.pollsRepository.findOne({
+      where: { id: id },
+    });
+    if (!poll) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: 'Invalid id',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const options = {};
+    (await this.optionsRepository.find({ poll: id })).forEach((option) => {
+      options[option.id] = option.name;
+    });
+
+    const votes = await this.voteRepository.find({
+      select: ['address', 'signerAddress', 'optionId'],
+      where: { pollId: id },
+    });
+
+    votes.forEach((vote) => {
+      vote['optionName'] = options[vote.optionId];
+      delete vote.optionId;
+    });
     return votes;
   }
 
