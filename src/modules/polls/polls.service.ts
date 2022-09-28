@@ -25,6 +25,7 @@ import { SnapshotService } from '../snapshot/snapshot.service';
 import { MinerInfo } from '../snapshot/minerInfo.entity';
 import { parseIssue } from './polls.utils';
 import * as BN from 'bn.js';
+import BigNumber from 'bignumber.js';
 import * as filecoin_signer from '@zondax/filecoin-signing-tools';
 
 import {
@@ -484,10 +485,19 @@ export class PollsService {
 
     let accountState: Actor;
     try {
-      accountState = await this.lotus.walletProvider.getActor(
-        params.address,
-        JSON.parse(poll.snapshotTipsetKey),
-      );
+      if (vote.constituentGroupId === 0) {
+        accountState = await this.lotus.walletProvider.getActor(
+          params.address,
+          JSON.parse(poll.snapshotTipsetKey),
+        );
+      } else {
+        accountState = {
+          Balance: new BigNumber(0),
+          Code: { '/': '' },
+          Head: { '/': '' },
+          Nonce: 0,
+        };
+      }
 
       vote.balance = accountState.Balance.toString();
     } catch (e) {
