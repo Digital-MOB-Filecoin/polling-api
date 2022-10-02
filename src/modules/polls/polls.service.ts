@@ -534,9 +534,11 @@ export class PollsService {
 
     vote.signature = JSON.stringify(signature);
 
-    let addressId: string;
+    let addressId: string = 'f9';
     try {
-      addressId = await this.lotus.walletProvider.lookupId(params.address);
+      if (vote.constituentGroupId === 0) {
+        addressId = await this.lotus.walletProvider.lookupId(params.address);
+      }
     } catch (e) {
       throw new HttpException(
         {
