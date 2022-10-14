@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
 
+env:
+  SLACK_CHANNEL: infra-ci-polling
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +22,7 @@ jobs:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       uses: voxmedia/github-action-slack-notify-build@v1
       with:
-        channel: infra-ci-polling
+        channel: ${{ env.SLACK_CHANNEL }}
         status: STARTED
         color: warning
 
@@ -32,7 +35,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-2
+        aws-region: us-east-1
 
     - name: Login to Amazon ECR
       id: login-ecr
@@ -62,7 +65,7 @@ jobs:
       uses: voxmedia/github-action-slack-notify-build@v1
       with:
         message_id: ${{ steps.slack.outputs.message_id }}
-        channel: infra-ci-polling
+        channel: ${{ env.SLACK_CHANNEL }}
         status: SUCCESS
         color: good
 
@@ -73,7 +76,7 @@ jobs:
       uses: voxmedia/github-action-slack-notify-build@v1
       with:
         message_id: ${{ steps.slack.outputs.message_id }}
-        channel: infra-ci-polling
+        channel: ${{ env.SLACK_CHANNEL }}
         status: FAILED
         color: danger
 
